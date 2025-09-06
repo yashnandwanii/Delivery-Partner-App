@@ -8,7 +8,7 @@ part of 'simple_delivery_partner.dart';
 
 class SimpleDeliveryPartnerAdapter extends TypeAdapter<SimpleDeliveryPartner> {
   @override
-  final int typeId = 10;
+  final int typeId = 0;
 
   @override
   SimpleDeliveryPartner read(BinaryReader reader) {
@@ -17,31 +17,29 @@ class SimpleDeliveryPartnerAdapter extends TypeAdapter<SimpleDeliveryPartner> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return SimpleDeliveryPartner(
-      id: fields[0] as String?,
-      name: fields[1] as String?,
-      email: fields[2] as String?,
-      phone: fields[3] as String?,
-      profileImage: fields[4] as String?,
-      isVerified: fields[5] as bool?,
-      isOnline: fields[6] as bool?,
-      vehicleType: fields[7] as String?,
-      vehicleNumber: fields[8] as String?,
-      licenseNumber: fields[9] as String?,
-      currentLocation: fields[10] as SimpleLocationModel?,
-      rating: fields[11] as double?,
-      totalDeliveries: fields[12] as int?,
-      earnings: fields[13] as double?,
-      status: fields[14] as String?,
-      documents: (fields[15] as List?)?.cast<String>(),
-      createdAt: fields[16] as DateTime?,
-      updatedAt: fields[17] as DateTime?,
+      id: fields[0] as String,
+      name: fields[1] as String,
+      email: fields[2] as String,
+      phone: fields[3] as String,
+      profileImage: fields[4] as String,
+      isActive: fields[5] as bool,
+      isVerified: fields[6] as bool,
+      vehicleType: fields[7] as String,
+      vehicleNumber: fields[8] as String,
+      rating: fields[9] as double,
+      totalDeliveries: fields[10] as int,
+      totalEarnings: fields[11] as double,
+      status: fields[12] as String,
+      currentLocation: fields[13] as SimpleLocationModel?,
+      lastActiveAt: fields[14] as DateTime?,
+      fcmToken: fields[15] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, SimpleDeliveryPartner obj) {
     writer
-      ..writeByte(18)
+      ..writeByte(16)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -53,31 +51,27 @@ class SimpleDeliveryPartnerAdapter extends TypeAdapter<SimpleDeliveryPartner> {
       ..writeByte(4)
       ..write(obj.profileImage)
       ..writeByte(5)
-      ..write(obj.isVerified)
+      ..write(obj.isActive)
       ..writeByte(6)
-      ..write(obj.isOnline)
+      ..write(obj.isVerified)
       ..writeByte(7)
       ..write(obj.vehicleType)
       ..writeByte(8)
       ..write(obj.vehicleNumber)
       ..writeByte(9)
-      ..write(obj.licenseNumber)
-      ..writeByte(10)
-      ..write(obj.currentLocation)
-      ..writeByte(11)
       ..write(obj.rating)
-      ..writeByte(12)
+      ..writeByte(10)
       ..write(obj.totalDeliveries)
-      ..writeByte(13)
-      ..write(obj.earnings)
-      ..writeByte(14)
+      ..writeByte(11)
+      ..write(obj.totalEarnings)
+      ..writeByte(12)
       ..write(obj.status)
+      ..writeByte(13)
+      ..write(obj.currentLocation)
+      ..writeByte(14)
+      ..write(obj.lastActiveAt)
       ..writeByte(15)
-      ..write(obj.documents)
-      ..writeByte(16)
-      ..write(obj.createdAt)
-      ..writeByte(17)
-      ..write(obj.updatedAt);
+      ..write(obj.fcmToken);
   }
 
   @override
@@ -93,7 +87,7 @@ class SimpleDeliveryPartnerAdapter extends TypeAdapter<SimpleDeliveryPartner> {
 
 class SimpleLocationModelAdapter extends TypeAdapter<SimpleLocationModel> {
   @override
-  final int typeId = 11;
+  final int typeId = 1;
 
   @override
   SimpleLocationModel read(BinaryReader reader) {
@@ -102,8 +96,8 @@ class SimpleLocationModelAdapter extends TypeAdapter<SimpleLocationModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return SimpleLocationModel(
-      latitude: fields[0] as double?,
-      longitude: fields[1] as double?,
+      latitude: fields[0] as double,
+      longitude: fields[1] as double,
       address: fields[2] as String?,
       timestamp: fields[3] as DateTime?,
     );

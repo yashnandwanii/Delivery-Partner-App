@@ -8,6 +8,8 @@ import 'providers/order_provider.dart';
 import 'models/simple_delivery_partner.dart';
 import 'models/delivery_order.dart';
 import 'screens/splash_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,7 +46,7 @@ class MyApp extends StatelessWidget {
             brightness: Brightness.light,
           ),
           useMaterial3: true,
-          textTheme: GoogleFonts.metropolisTextTheme(),
+          textTheme: GoogleFonts.metrophobicTextTheme(),
           appBarTheme: const AppBarTheme(
             backgroundColor: Color(0xFFFC6011),
             foregroundColor: Colors.white,
@@ -78,14 +80,18 @@ class MyApp extends StatelessWidget {
               vertical: 16,
             ),
           ),
-          cardTheme: CardTheme(
+          cardTheme: const CardThemeData(
             elevation: 4,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
           ),
         ),
         home: const SplashScreen(),
+        routes: {
+          '/login': (context) => const LoginScreen(),
+          '/home': (context) => const HomeScreen(),
+        },
       ),
     );
   }

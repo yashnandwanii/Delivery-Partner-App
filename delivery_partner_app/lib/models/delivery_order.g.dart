@@ -17,85 +17,76 @@ class DeliveryOrderAdapter extends TypeAdapter<DeliveryOrder> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return DeliveryOrder(
-      id: fields[0] as String?,
-      customerId: fields[1] as String?,
-      restaurantId: fields[2] as String?,
-      restaurantName: fields[3] as String?,
-      customerName: fields[4] as String?,
-      customerPhone: fields[5] as String?,
-      pickupLocation: fields[6] as LocationModel?,
-      deliveryLocation: fields[7] as LocationModel?,
-      deliveryAddress: fields[8] as String?,
-      items: (fields[9] as List?)?.cast<OrderItem>(),
-      totalAmount: fields[10] as double?,
-      deliveryFee: fields[11] as double?,
-      status: fields[12] as String?,
-      orderTime: fields[13] as DateTime?,
-      acceptedTime: fields[14] as DateTime?,
-      pickedUpTime: fields[15] as DateTime?,
-      deliveredTime: fields[16] as DateTime?,
+      id: fields[0] as String,
+      userId: fields[1] as String,
+      restaurantId: fields[2] as String,
+      restaurantName: fields[3] as String,
+      orderItems: (fields[4] as List).cast<OrderItem>(),
+      orderTotal: fields[5] as double,
+      deliveryFee: fields[6] as double,
+      grandTotal: fields[7] as double,
+      pickupLocation: fields[8] as LocationModel,
+      deliveryLocation: fields[9] as LocationModel,
+      orderStatus: fields[10] as String,
+      paymentStatus: fields[11] as String,
+      paymentMethod: fields[12] as String,
+      orderDate: fields[13] as DateTime,
+      estimatedDeliveryTime: fields[14] as DateTime?,
+      actualDeliveryTime: fields[15] as DateTime?,
+      deliveryPartnerId: fields[16] as String?,
       specialInstructions: fields[17] as String?,
-      paymentMethod: fields[18] as String?,
-      paymentStatus: fields[19] as String?,
+      customerName: fields[18] as String,
+      customerPhone: fields[19] as String,
       distance: fields[20] as double?,
-      estimatedTime: fields[21] as int?,
-      otp: fields[22] as String?,
-      images: (fields[23] as List?)?.cast<String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, DeliveryOrder obj) {
     writer
-      ..writeByte(24)
+      ..writeByte(21)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.customerId)
+      ..write(obj.userId)
       ..writeByte(2)
       ..write(obj.restaurantId)
       ..writeByte(3)
       ..write(obj.restaurantName)
       ..writeByte(4)
-      ..write(obj.customerName)
+      ..write(obj.orderItems)
       ..writeByte(5)
-      ..write(obj.customerPhone)
+      ..write(obj.orderTotal)
       ..writeByte(6)
-      ..write(obj.pickupLocation)
-      ..writeByte(7)
-      ..write(obj.deliveryLocation)
-      ..writeByte(8)
-      ..write(obj.deliveryAddress)
-      ..writeByte(9)
-      ..write(obj.items)
-      ..writeByte(10)
-      ..write(obj.totalAmount)
-      ..writeByte(11)
       ..write(obj.deliveryFee)
+      ..writeByte(7)
+      ..write(obj.grandTotal)
+      ..writeByte(8)
+      ..write(obj.pickupLocation)
+      ..writeByte(9)
+      ..write(obj.deliveryLocation)
+      ..writeByte(10)
+      ..write(obj.orderStatus)
+      ..writeByte(11)
+      ..write(obj.paymentStatus)
       ..writeByte(12)
-      ..write(obj.status)
+      ..write(obj.paymentMethod)
       ..writeByte(13)
-      ..write(obj.orderTime)
+      ..write(obj.orderDate)
       ..writeByte(14)
-      ..write(obj.acceptedTime)
+      ..write(obj.estimatedDeliveryTime)
       ..writeByte(15)
-      ..write(obj.pickedUpTime)
+      ..write(obj.actualDeliveryTime)
       ..writeByte(16)
-      ..write(obj.deliveredTime)
+      ..write(obj.deliveryPartnerId)
       ..writeByte(17)
       ..write(obj.specialInstructions)
       ..writeByte(18)
-      ..write(obj.paymentMethod)
+      ..write(obj.customerName)
       ..writeByte(19)
-      ..write(obj.paymentStatus)
+      ..write(obj.customerPhone)
       ..writeByte(20)
-      ..write(obj.distance)
-      ..writeByte(21)
-      ..write(obj.estimatedTime)
-      ..writeByte(22)
-      ..write(obj.otp)
-      ..writeByte(23)
-      ..write(obj.images);
+      ..write(obj.distance);
   }
 
   @override
@@ -111,7 +102,7 @@ class DeliveryOrderAdapter extends TypeAdapter<DeliveryOrder> {
 
 class LocationModelAdapter extends TypeAdapter<LocationModel> {
   @override
-  final int typeId = 6;
+  final int typeId = 3;
 
   @override
   LocationModel read(BinaryReader reader) {
@@ -120,10 +111,10 @@ class LocationModelAdapter extends TypeAdapter<LocationModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return LocationModel(
-      latitude: fields[0] as double?,
-      longitude: fields[1] as double?,
-      address: fields[2] as String?,
-      timestamp: fields[3] as DateTime?,
+      latitude: fields[0] as double,
+      longitude: fields[1] as double,
+      address: fields[2] as String,
+      landmark: fields[3] as String?,
     );
   }
 
@@ -138,7 +129,7 @@ class LocationModelAdapter extends TypeAdapter<LocationModel> {
       ..writeByte(2)
       ..write(obj.address)
       ..writeByte(3)
-      ..write(obj.timestamp);
+      ..write(obj.landmark);
   }
 
   @override
@@ -154,7 +145,7 @@ class LocationModelAdapter extends TypeAdapter<LocationModel> {
 
 class OrderItemAdapter extends TypeAdapter<OrderItem> {
   @override
-  final int typeId = 7;
+  final int typeId = 4;
 
   @override
   OrderItem read(BinaryReader reader) {
@@ -163,34 +154,31 @@ class OrderItemAdapter extends TypeAdapter<OrderItem> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return OrderItem(
-      id: fields[0] as String?,
-      name: fields[1] as String?,
-      quantity: fields[2] as int?,
-      price: fields[3] as double?,
-      image: fields[4] as String?,
-      addons: (fields[5] as List?)?.cast<String>(),
-      specialInstructions: fields[6] as String?,
+      foodId: fields[0] as String,
+      foodName: fields[1] as String,
+      quantity: fields[2] as int,
+      price: fields[3] as double,
+      additives: (fields[4] as List).cast<String>(),
+      instructions: fields[5] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, OrderItem obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(6)
       ..writeByte(0)
-      ..write(obj.id)
+      ..write(obj.foodId)
       ..writeByte(1)
-      ..write(obj.name)
+      ..write(obj.foodName)
       ..writeByte(2)
       ..write(obj.quantity)
       ..writeByte(3)
       ..write(obj.price)
       ..writeByte(4)
-      ..write(obj.image)
+      ..write(obj.additives)
       ..writeByte(5)
-      ..write(obj.addons)
-      ..writeByte(6)
-      ..write(obj.specialInstructions);
+      ..write(obj.instructions);
   }
 
   @override

@@ -16,7 +16,7 @@ class AuthProvider extends ChangeNotifier {
   String? get token => _token;
   bool get isAuthenticated => _currentUser != null && _token != null;
 
-  static const String baseUrl = 'http://localhost:6013/api';
+  static const String baseUrl = 'http://localhost:6014/api';
 
   Future<void> loadStoredAuth() async {
     try {
@@ -40,16 +40,18 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/delivery-partner/login'),
+        Uri.parse('$baseUrl/delivery/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'email': email, 'password': password}),
       );
 
       final data = json.decode(response.body);
 
-      if (response.statusCode == 200) {
-        _token = data['token'];
-        _currentUser = SimpleDeliveryPartner.fromJson(data['user']);
+      if (response.statusCode == 200 && data['success'] == true) {
+        _token = data['data']['token'];
+        _currentUser = SimpleDeliveryPartner.fromJson(
+          data['data']['deliveryPartner'],
+        );
 
         await _storeAuth();
         _setLoading(false);
@@ -79,7 +81,7 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/delivery-partner/register'),
+        Uri.parse('$baseUrl/delivery/auth/register'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'name': name,
@@ -88,14 +90,17 @@ class AuthProvider extends ChangeNotifier {
           'phone': phone,
           'vehicleType': vehicleType,
           'vehicleNumber': vehicleNumber,
+          'licenseNumber': 'DL123456789', // Default for now
         }),
       );
 
       final data = json.decode(response.body);
 
-      if (response.statusCode == 201) {
-        _token = data['token'];
-        _currentUser = SimpleDeliveryPartner.fromJson(data['user']);
+      if (response.statusCode == 201 && data['success'] == true) {
+        _token = data['data']['token'];
+        _currentUser = SimpleDeliveryPartner.fromJson(
+          data['data']['deliveryPartner'],
+        );
 
         await _storeAuth();
         _setLoading(false);
@@ -126,8 +131,8 @@ class AuthProvider extends ChangeNotifier {
     if (!isAuthenticated) return;
 
     try {
-      final response = await http.put(
-        Uri.parse('$baseUrl/delivery-partner/location'),
+      final response = await http.post(
+        Uri.parse('$baseUrl/delivery/location'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $_token',
@@ -157,7 +162,7 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final response = await http.put(
-        Uri.parse('$baseUrl/delivery-partner/status'),
+        Uri.parse('$baseUrl/delivery/partner/status'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $_token',

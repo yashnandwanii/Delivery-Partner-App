@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/order_provider.dart';
+import '../providers/partner_provider.dart';
+import '../widgets/order_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,10 +19,17 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+      final partnerProvider = Provider.of<PartnerProvider>(
+        context,
+        listen: false,
+      );
 
       if (authProvider.isAuthenticated) {
         orderProvider.setToken(authProvider.token);
-        orderProvider.loadAvailableOrders();
+        // Only load orders if partner is online
+        if (partnerProvider.isOnline) {
+          orderProvider.loadAvailableOrders();
+        }
         orderProvider.loadMyOrders();
       }
     });
@@ -58,8 +67,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Consumer2<AuthProvider, OrderProvider>(
-        builder: (context, authProvider, orderProvider, child) {
+      body: Consumer3<AuthProvider, OrderProvider, PartnerProvider>(
+        builder: (context, authProvider, orderProvider, partnerProvider, child) {
           if (!authProvider.isAuthenticated) {
             return const Center(child: Text('Please login to continue'));
           }
@@ -81,18 +90,74 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: Theme.of(context).textTheme.headlineSmall,
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          'Status: ${authProvider.currentUser?.status ?? 'Unknown'}',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                        Row(
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: partnerProvider.statusColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Status: ${partnerProvider.statusText}',
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Total Deliveries: ${authProvider.currentUser?.totalDeliveries ?? 0}',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        Text(
-                          'Rating: ${authProvider.currentUser?.rating.toStringAsFixed(1) ?? '0.0'} ⭐',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Total Deliveries',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                Text(
+                                  '${partnerProvider.totalDeliveries}',
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Rating',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                Text(
+                                  '${partnerProvider.rating.toStringAsFixed(1)} ⭐',
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Today\'s Earnings',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                Text(
+                                  partnerProvider.todayEarnings,
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -101,39 +166,65 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 20),
 
-                // Quick actions
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => orderProvider.loadAvailableOrders(),
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Refresh Orders'),
+                // Go Online/Offline Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton.icon(
+                    onPressed: partnerProvider.isLoading
+                        ? null
+                        : () async {
+                            final success = await partnerProvider
+                                .toggleAvailability();
+                            if (success && partnerProvider.isOnline) {
+                              // Load available orders when going online
+                              orderProvider.loadAvailableOrders();
+                            } else if (success && !partnerProvider.isOnline) {
+                              // Clear orders when going offline
+                              orderProvider.clearOrders();
+                            }
+
+                            if (partnerProvider.error != null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(partnerProvider.error!),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              partnerProvider.clearError();
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: partnerProvider.isOnline
+                          ? Colors.red
+                          : Colors.green,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          final newStatus =
-                              authProvider.currentUser?.status == 'online'
-                              ? 'offline'
-                              : 'online';
-                          authProvider.updateStatus(newStatus);
-                        },
-                        icon: Icon(
-                          authProvider.currentUser?.status == 'online'
-                              ? Icons.stop
-                              : Icons.play_arrow,
-                        ),
-                        label: Text(
-                          authProvider.currentUser?.status == 'online'
-                              ? 'Go Offline'
-                              : 'Go Online',
-                        ),
+                    icon: partnerProvider.isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Icon(
+                            partnerProvider.isOnline
+                                ? Icons.stop_circle
+                                : Icons.play_circle,
+                          ),
+                    label: Text(
+                      partnerProvider.isOnline ? 'Go Offline' : 'Go Online',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ],
+                  ),
                 ),
 
                 const SizedBox(height: 20),
@@ -146,7 +237,37 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 12),
 
                 Expanded(
-                  child: orderProvider.isLoading
+                  child: !partnerProvider.isOnline
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.offline_bolt,
+                                size: 64,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'You\'re Offline',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Go online to start receiving orders',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : orderProvider.isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : orderProvider.availableOrders.isEmpty
                       ? const Center(
@@ -166,6 +287,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                   color: Colors.grey,
                                 ),
                               ),
+                              SizedBox(height: 8),
+                              Text(
+                                'New orders will appear here',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
                             ],
                           ),
                         )
@@ -173,28 +302,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           itemCount: orderProvider.availableOrders.length,
                           itemBuilder: (context, index) {
                             final order = orderProvider.availableOrders[index];
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              child: ListTile(
-                                title: Text(
-                                  'Order #${order.id.substring(0, 8)}',
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Restaurant: ${order.restaurantName}'),
-                                    Text(
-                                      'Total: \$${order.grandTotal.toStringAsFixed(2)}',
-                                    ),
-                                    Text('Items: ${order.orderItems.length}'),
-                                  ],
-                                ),
-                                trailing: ElevatedButton(
-                                  onPressed: () =>
-                                      orderProvider.acceptOrder(order.id),
-                                  child: const Text('Accept'),
-                                ),
-                              ),
+                            return OrderCard(
+                              order: order,
+                              onAccept: () =>
+                                  orderProvider.acceptOrder(order.id),
+                              onViewDetails: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Order details coming soon!'),
+                                  ),
+                                );
+                              },
                             );
                           },
                         ),

@@ -5,10 +5,13 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'providers/auth_provider.dart';
 import 'providers/order_provider.dart';
+import 'providers/partner_provider.dart';
 import 'models/simple_delivery_partner.dart';
 import 'models/delivery_order.dart';
+import 'services/socket_service.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
 
 void main() async {
@@ -36,6 +39,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => OrderProvider()),
+        ChangeNotifierProvider(create: (_) => PartnerProvider()),
+        ChangeNotifierProvider(create: (_) => SocketService()),
       ],
       child: MaterialApp(
         title: 'Delivery Partner App',
@@ -90,6 +95,7 @@ class MyApp extends StatelessWidget {
         home: const SplashScreen(),
         routes: {
           '/login': (context) => const LoginScreen(),
+          '/register': (context) => const RegisterScreen(),
           '/home': (context) => const HomeScreen(),
         },
       ),

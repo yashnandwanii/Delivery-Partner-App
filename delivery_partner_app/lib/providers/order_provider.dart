@@ -17,7 +17,7 @@ class OrderProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  static const String baseUrl = 'http://localhost:6013/api';
+  static const String baseUrl = 'http://localhost:6014/api';
 
   void setToken(String? token) {
     _token = token;
@@ -31,7 +31,7 @@ class OrderProvider extends ChangeNotifier {
 
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/orders/available'),
+        Uri.parse('$baseUrl/delivery/orders/available'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $_token',
@@ -62,7 +62,7 @@ class OrderProvider extends ChangeNotifier {
 
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/orders/my-orders'),
+        Uri.parse('$baseUrl/delivery/orders/my-orders'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $_token',
@@ -105,7 +105,7 @@ class OrderProvider extends ChangeNotifier {
 
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/orders/$orderId/accept'),
+        Uri.parse('$baseUrl/delivery/orders/$orderId/accept'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $_token',
